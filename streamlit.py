@@ -1,41 +1,38 @@
-import pandas as pd
-import pickle
-import joblib
 import streamlit as st
-import os  # 替代 pathlib
+import joblib
+import pickle
+import os
 
-# 模型路径配置
-MODEL_PATH = 'best_mlp_model.pkl'
+# 配置模型路径
+MODEL_PATH = 'best_mlp_model.pkl'  # 根据实际情况修改
 
-# 验证文件存在
+# 检查文件是否存在
 if not os.path.exists(MODEL_PATH):
-    st.error(f"模型文件未找到: {os.path.abspath(MODEL_PATH)}")
+    st.error(f"""
+        ⚠️ 模型文件未找到！请检查：
+        1. 文件是否命名为：{MODEL_PATH}
+        2. 是否放在同一目录下
+        当前工作目录：{os.getcwd()}
+        """)
     st.stop()
 
 @st.cache_resource
 def load_model():
     try:
-        # 尝试 joblib
+        # 尝试用joblib加载
         try:
-            model = joblib.load(MODEL_PATH)
-            if hasattr(model, 'predict_proba'):
-                return model
+            return joblib.load(MODEL_PATH)
         except:
-            pass
-        
-        # 尝试 pickle
-        with open(MODEL_PATH, 'rb') as f:
-            model = pickle.load(f)
-            if hasattr(model, 'predict_proba'):
-                return model
-        
-        raise Exception("无效的模型文件")
+            # 尝试用pickle加载
+            with open(MODEL_PATH, 'rb') as f:
+                return pickle.load(f)
     except Exception as e:
         st.error(f"模型加载失败: {str(e)}")
         st.stop()
 
 # 加载模型
 model = load_model()
+st.success("✅ 模型加载成功！")
 
 # 其余原有代码保持不变...
 
