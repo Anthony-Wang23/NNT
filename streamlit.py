@@ -23,8 +23,8 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Model paths
-MODEL_PATH = Path('D:/anaconda3/envs/py312/upload/best_mlp_model.pkl')
-ALTERNATIVE_MODEL_PATH = Path('D:/anaconda3/envs/py312/upload/nnet_style_model.pkl')
+MODEL_PATH = Path('models/best_mlp_model.pkl')  # Relative path
+ALTERNATIVE_MODEL_PATH = Path('models/nnet_style_model.pkl')  # Relative path
 
 
 @st.cache_resource
