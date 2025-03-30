@@ -22,40 +22,20 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Model paths
+# Replace hardcoded paths with:
 MODEL_PATH = Path('models/best_mlp_model.pkl')  # Relative path
 ALTERNATIVE_MODEL_PATH = Path('models/nnet_style_model.pkl')  # Relative path
 
-
+# Simplify model loading:
 @st.cache_resource
 def load_model(model_path):
     """Load trained model"""
     try:
         # Try joblib first
-        try:
-            model = joblib.load(model_path)
-            if hasattr(model, 'predict_proba'):
-                return model
-        except:
-            pass
-
-        # Try pickle
-        with open(model_path, 'rb') as f:
-            loaded_data = pickle.load(f)
-            if isinstance(loaded_data, dict) and 'model' in loaded_data:
-                model = loaded_data['model']
-                if hasattr(model, 'predict_proba'):
-                    return model
-
-        # Try alternative path
-        try:
-            model = joblib.load(ALTERNATIVE_MODEL_PATH)
-            if hasattr(model, 'predict_proba'):
-                return model
-        except:
-            pass
-
-        raise Exception("No valid model found")
+        model = joblib.load(model_path)
+        if not hasattr(model, 'predict_proba'):
+            raise ValueError("Model doesn't have predict_proba method")
+        return model
     except Exception as e:
         st.error(f"Model loading failed: {str(e)}")
         return None
