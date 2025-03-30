@@ -23,8 +23,8 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Replace hardcoded paths with:
-MODEL_PATH = Path('models/best_mlp_model.pkl')  # Relative path
-ALTERNATIVE_MODEL_PATH = Path('models/nnet_style_model.pkl')  # Relative path
+MODEL_PATH = Path('best_mlp_model.pkl')  # Relative path
+ALTERNATIVE_MODEL_PATH = Path('nnet_style_model.pkl')  # Relative path
 
 # Simplify model loading:
 @st.cache_resource
