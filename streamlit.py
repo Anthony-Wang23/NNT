@@ -1,40 +1,9 @@
-import streamlit as st
-import joblib
+import pandas as pd
 import pickle
-import os
-
-# 配置模型路径
-MODEL_PATH = 'best_mlp_model.pkl'  # 根据实际情况修改
-
-# 检查文件是否存在
-if not os.path.exists(MODEL_PATH):
-    st.error(f"""
-        ⚠️ 模型文件未找到！请检查：
-        1. 文件是否命名为：{MODEL_PATH}
-        2. 是否放在同一目录下
-        当前工作目录：{os.getcwd()}
-        """)
-    st.stop()
-
-@st.cache_resource
-def load_model():
-    try:
-        # 尝试用joblib加载
-        try:
-            return joblib.load(MODEL_PATH)
-        except:
-            # 尝试用pickle加载
-            with open(MODEL_PATH, 'rb') as f:
-                return pickle.load(f)
-    except Exception as e:
-        st.error(f"模型加载失败: {str(e)}")
-        st.stop()
-
-# 加载模型
-model = load_model()
-st.success("✅ 模型加载成功！")
-
-# 其余原有代码保持不变...
+import joblib
+import streamlit as st
+import numpy as np
+from pathlib import Path
 
 # Page configuration
 st.set_page_config(
@@ -53,7 +22,38 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# Model path
+MODEL_PATH = Path('best_mlp_model.pkl')
 
+@st.cache_resource
+def load_model(model_path):
+    """Load trained model"""
+    try:
+        # Try joblib first
+        try:
+            model = joblib.load(model_path)
+            if hasattr(model, 'predict_proba'):
+                return model
+        except:
+            pass
+
+        # Try pickle
+        with open(model_path, 'rb') as f:
+            loaded_data = pickle.load(f)
+            if isinstance(loaded_data, dict) and 'model' in loaded_data:
+                model = loaded_data['model']
+                if hasattr(model, 'predict_proba'):
+                    return model
+
+        raise Exception("No valid model found")
+    except Exception as e:
+        st.error(f"Model loading failed: {str(e)}")
+        return None
+
+# Load model
+model = load_model(MODEL_PATH)
+if model is None:
+    st.stop()
 
 # App header
 st.title("Melanoma Sentinel Lymph Node Metastasis Predictor")
@@ -124,4 +124,3 @@ st.markdown("""
 *Clinical Decision Support Tool v1.0*  
 *For physician use only - Not a substitute for clinical judgment*
 """)
-        #streamlit run D:/anaconda3/envs/py312/streamlit.py
