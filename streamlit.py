@@ -2,8 +2,42 @@ import pandas as pd
 import pickle
 import joblib
 import streamlit as st
-import numpy as np
-from pathlib import Path
+import os  # 替代 pathlib
+
+# 模型路径配置
+MODEL_PATH = 'best_mlp_model.pkl'
+
+# 验证文件存在
+if not os.path.exists(MODEL_PATH):
+    st.error(f"模型文件未找到: {os.path.abspath(MODEL_PATH)}")
+    st.stop()
+
+@st.cache_resource
+def load_model():
+    try:
+        # 尝试 joblib
+        try:
+            model = joblib.load(MODEL_PATH)
+            if hasattr(model, 'predict_proba'):
+                return model
+        except:
+            pass
+        
+        # 尝试 pickle
+        with open(MODEL_PATH, 'rb') as f:
+            model = pickle.load(f)
+            if hasattr(model, 'predict_proba'):
+                return model
+        
+        raise Exception("无效的模型文件")
+    except Exception as e:
+        st.error(f"模型加载失败: {str(e)}")
+        st.stop()
+
+# 加载模型
+model = load_model()
+
+# 其余原有代码保持不变...
 
 # Page configuration
 st.set_page_config(
@@ -22,29 +56,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Replace hardcoded paths with:
-MODEL_PATH = Path('best_mlp_model.pkl')  # Relative path
-ALTERNATIVE_MODEL_PATH = Path('nnet_style_model.pkl')  # Relative path
 
-# Simplify model loading:
-@st.cache_resource
-def load_model(model_path):
-    """Load trained model"""
-    try:
-        # Try joblib first
-        model = joblib.load(model_path)
-        if not hasattr(model, 'predict_proba'):
-            raise ValueError("Model doesn't have predict_proba method")
-        return model
-    except Exception as e:
-        st.error(f"Model loading failed: {str(e)}")
-        return None
-
-
-# Load model
-model = load_model(MODEL_PATH)
-if model is None:
-    st.stop()
 
 # App header
 st.title("Melanoma Sentinel Lymph Node Metastasis Predictor")
